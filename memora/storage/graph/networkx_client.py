@@ -5,7 +5,7 @@ In-memory fallback for when Neo4j is unavailable. Stores graph in NetworkX Multi
 
 from typing import List, Dict, Optional
 import networkx as nx
-from datetime import datetime
+from datetime import datetime, timezone
 from memora.core.interfaces import IKGRepo
 from memora.core.types import MemCube
 
@@ -25,8 +25,8 @@ class NetworkXClient(IKGRepo):
             tier=cube.tier.value,
             tags=cube.tags,
             extra=cube.extra,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
+            updated_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         return cube.id
     
@@ -41,7 +41,7 @@ class NetworkXClient(IKGRepo):
             label=label,
             metadata=metadata or {},
             active=True,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         return edge_id
     
@@ -51,7 +51,7 @@ class NetworkXClient(IKGRepo):
             if data.get('id') == edge_id:
                 data['active'] = False
                 data['deprecated_reason'] = reason
-                data['deprecated_at'] = datetime.utcnow()
+                data['deprecated_at'] = datetime.now(timezone.utc).replace(tzinfo=None)
                 break
     
     async def get_neighbors(self, cube_id: str, depth: int = 1) -> List[MemCube]:

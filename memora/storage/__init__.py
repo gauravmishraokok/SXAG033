@@ -1,25 +1,24 @@
 """Storage module components.
 
 Provides PostgreSQL, vector, and graph storage implementations.
+
+Imports are lazy to avoid requiring optional heavy dependencies (sentence-transformers,
+neo4j client) just by importing the storage package. Use explicit imports in app wiring.
 """
 
-from .postgres.connection import get_async_engine, get_async_session
-from .postgres.models import Base, MemCubeORM, EpisodeORM, ContradictionORM, QuarantineLogORM
-from .vector.embedding import SentenceTransformerEmbedder
-from .vector.pgvector_client import PgVectorClient
-from .graph.neo4j_client import Neo4jClient
-from .graph.networkx_client import NetworkXClient
+# Only expose the DB model base and ORM aliases at package level (no heavy deps)
+from .postgres.models import (
+    Base,
+    MemCubeORM,
+    EpisodeORM,
+    ContradictionORM,
+    QuarantineLogORM,
+)
 
 __all__ = [
-    "get_async_engine",
-    "get_async_session", 
     "Base",
     "MemCubeORM",
     "EpisodeORM",
     "ContradictionORM",
     "QuarantineLogORM",
-    "SentenceTransformerEmbedder",
-    "PgVectorClient",
-    "Neo4jClient",
-    "NetworkXClient",
 ]

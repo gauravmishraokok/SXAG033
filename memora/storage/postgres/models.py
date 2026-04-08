@@ -5,9 +5,18 @@ Exactly 4 tables as per spec: mem_cubes, quarantine_records, failure_log, timeli
 
 from datetime import datetime
 from sqlalchemy import Column, String, Text, Integer, Float, DateTime, Boolean, JSON
-from sqlalchemy.dialects.postgresql import UUID, VECTOR
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
+
+# pgvector is only available when the Postgres extension is installed.
+# In test environments without a real DB, fall back to JSON for the column type.
+try:
+    from pgvector.sqlalchemy import Vector as VECTOR
+    _VECTOR_COLUMN = VECTOR(384)
+except ImportError:
+    VECTOR = JSON  # type: ignore[assignment,misc]
+    _VECTOR_COLUMN = JSON  # type: ignore[assignment,misc]
 
 Base = declarative_base()
 
@@ -21,7 +30,7 @@ class MemCubeRow(Base):
     memory_type = Column(String(20), nullable=False)  # MemoryType enum value
     tier = Column(String(10), nullable=False)         # MemoryTier enum value
     tags = Column(JSON, nullable=False, default=list)  # list[str]
-    embedding = Column(VECTOR(384))                    # pgvector column
+    embedding = Column(_VECTOR_COLUMN)                    # pgvector column
     provenance = Column(JSON, nullable=False)          # Serialized Provenance
     access_count = Column(Integer, nullable=False, default=0)
     ttl_seconds = Column(Integer)                      # None or int
@@ -68,6 +77,18 @@ class TimelineEventRow(Base):
     event_type = Column(String(30), nullable=False)  # "created"|"updated"|"quarantined"|"resolved"|"evicted"
     description = Column(Text)  # Optional description
     session_id = Column(UUID(as_uuid=True))  # Optional session context
-    metadata = Column(JSON, nullable=False, default=dict)  # Event-specific metadata
+    event_metadata = Column(JSON, nullable=False, default=dict)  # Event-specific metadata (renamed from 'metadata' — reserved by SQLAlchemy)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    
+
+
+# ── Aliases used by vault repos and storage/__init__.py ─────────────────────
+MemCubeORM = MemCubeRow
+QuarantineORM = QuarantineRow
+FailureLogORM = FailureLogRow
+TimelineEventORM = TimelineEventRow
+# EpisodeORM: MemCubes filtered by memory_type == EPISODIC (alias at ORM level)
+EpisodeORM = MemCubeRow
+# Legacy aliases for storage/__init__.py compatibility
+ContradictionORM = QuarantineRow
+QuarantineLogORM = QuarantineRow
+Contradict = QuarantineRow
