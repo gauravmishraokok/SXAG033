@@ -6,7 +6,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from .errors import MemoraError, EmbeddingDimensionError
 
@@ -44,7 +44,7 @@ class Provenance:
     @classmethod
     def new(cls, origin: str, session_id: str) -> "Provenance":
         """Create a new provenance record."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         return cls(origin=origin, session_id=session_id, created_at=now, updated_at=now, version=1, parent_id=None)
 
 
@@ -83,7 +83,7 @@ class MemCube:
         if self.provenance:
             # Ensure timestamp difference by using microseconds from provenance
             import time
-            base_time = datetime.utcnow()
+            base_time = datetime.now(timezone.utc).replace(tzinfo=None)
             # Add small increment to ensure different timestamp
             new_time = base_time.replace(microsecond=(base_time.microsecond + 1) % 1000000)
             
@@ -238,8 +238,9 @@ class ContradictionVerdict:
         if not self.reasoning:
             raise MemoraError("reasoning cannot be empty")
         
-        if self.suggested_resolution not in {"accept", "reject", "merge"} and not self.suggested_resolution.startswith("merge:"):
-            raise MemoraError("suggested_resolution must be 'accept', 'reject', or 'merge:<content>'")
+        if self.suggested_resolution is not None:
+            if self.suggested_resolution not in {"accept", "reject", "merge"} and not self.suggested_resolution.startswith("merge:"):
+                raise MemoraError("suggested_resolution must be 'accept', 'reject', or 'merge:<content>'")
 
 
 # Validation helpers
