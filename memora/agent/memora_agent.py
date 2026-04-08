@@ -9,6 +9,7 @@ from memora.agent.session_manager import SessionManager
 from memora.agent.context_builder import ContextBuilder
 from memora.agent.tool_executor import ToolExecutor
 from memora.experience.outcome_tracker import OutcomeTracker
+from memora.retrieval.hybrid_retriever import HybridRetriever
 
 BASE_SYSTEM_PROMPT = """
 You are MEMORA, an AI agent with persistent long-term memory.
@@ -31,7 +32,7 @@ class MemoraAgent:
     def __init__(
         self,
         llm: ILLM,
-        retriever: Any,
+        retriever: HybridRetriever,
         context_builder: ContextBuilder,
         tool_executor: ToolExecutor,
         session_manager: SessionManager,
