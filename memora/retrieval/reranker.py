@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from memora.core.types import MemCube
 from memora.core.config import Settings
@@ -36,7 +36,7 @@ class Reranker:
         penalized_ids = await self.failure_reader.get_penalized_ids()
         
         ranked = []
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         
         for cube_id, cube in unique_cubes.items():
             dense_score = dense_scores.get(cube_id, 0.0)

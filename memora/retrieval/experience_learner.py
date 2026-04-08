@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from memora.core.interfaces import IFailureLog
 
 class ExperienceLearner:
@@ -8,7 +8,7 @@ class ExperienceLearner:
         self._cache_ttl: datetime | None = None
 
     async def get_penalized_ids(self) -> set[str]:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         if self._cache_ttl and (now - self._cache_ttl).total_seconds() < 60:
             return {cid for cid, count in self._cache.items() if count >= 2}
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from memora.core.types import MemCube
 from memora.core.config import Settings
@@ -16,7 +16,7 @@ class ContextPager:
         self._active: list[ContextSlot] = []
 
     def _priority(self, cube: MemCube, rerank_score: float) -> float:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         updated_at = cube.provenance.updated_at if cube.provenance else now
         days_since = max(0, (now - updated_at).days)
         recency = 1.0 / (1.0 + days_since)
@@ -37,7 +37,7 @@ class ContextPager:
                     cube=cube,
                     token_count=token_count,
                     priority=priority,
-                    injected_at=datetime.utcnow()
+                    injected_at=datetime.now(timezone.utc).replace(tzinfo=None)
                 ))
         
         self._active.sort(key=lambda x: x.priority, reverse=True)
