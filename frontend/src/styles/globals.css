@@ -1,0 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root {
+  --color-bg: #0a0b0f;
+  --color-surface: #111318;
+  --color-surface-2: #1a1d24;
+  --color-border: #2a2d36;
+  --color-border-dim: #1e2028;
+  --color-text-primary: #e8eaf0;
+  --color-text-secondary: #8891a8;
+  --color-text-dim: #4a5168;
+  --color-accent: #4f9cf8;
+  --color-warn: #f5a623;
+  --color-danger: #f25f5c;
+  --color-success: #50fa7b;
+  --color-neutral: #6272a4;
+  --color-episodic: #bd93f9;
+  --color-semantic: #4f9cf8;
+  --color-kg-node: #50fa7b;
+  --color-kg-edge: #ffb86c;
+  --color-hot: #ff5555;
+  --color-warm: #f1fa8c;
+  --color-cold: #6272a4;
+  --font-display: "DM Serif Display", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); }
+button, input, textarea { font: inherit; }
