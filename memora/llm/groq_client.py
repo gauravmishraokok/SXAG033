@@ -1,13 +1,13 @@
 import asyncio
 import json
-import openai
-from openai import AsyncOpenAI
+import groq
+from groq import AsyncGroq
 from memora.llm.base import ILLM
 from memora.core.errors import LLMRateLimitError, LLMResponseError
 
-class OpenAIClient(ILLM):
-    def __init__(self, api_key: str, model: str = "gpt-4o-mini"):
-        self.client = AsyncOpenAI(api_key=api_key)
+class GroqClient(ILLM):
+    def __init__(self, api_key: str, model: str = "llama3-70b-8192"):
+        self.client = AsyncGroq(api_key=api_key)
         self.model = model
 
     async def complete(self, system: str, user: str, max_tokens: int = 1000) -> str:
@@ -22,12 +22,12 @@ class OpenAIClient(ILLM):
                     max_tokens=max_tokens,
                 )
                 return response.choices[0].message.content
-            except openai.RateLimitError as e:
+            except groq.RateLimitError as e:
                 if attempt == 2:
-                    raise LLMRateLimitError("OpenAI Rate Limit exceeded") from e
+                    raise LLMRateLimitError("Groq Rate Limit exceeded") from e
                 await asyncio.sleep(delay)
             except Exception as e:
-                raise LLMResponseError(f"OpenAI API Error: {str(e)}") from e
+                raise LLMResponseError(f"Groq API Error: {str(e)}") from e
 
     async def complete_json(self, system: str, user: str, schema: dict, max_tokens: int = 1000) -> dict:
         system_prompt = system + "\n\nYou MUST respond with valid JSON only. No markdown, no explanation."
