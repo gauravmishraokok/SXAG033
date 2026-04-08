@@ -362,14 +362,14 @@ This file re-exports it for convenience: `from memora.llm.base import ILLM`.
 
 ---
 
-# SPEC: llm/claude_client.py
+# SPEC: llm/groq_client.py
 
-## Class: `ClaudeClient`
+## Class: `GroqClient`
 
 ```python
-class ClaudeClient(ILLM):
-    def __init__(self, api_key: str, model: str = "claude-opus-4-5"):
-        self.client = anthropic.AsyncAnthropic(api_key=api_key)
+class GroqClient(ILLM):
+    def __init__(self, api_key: str, model: str = "llama3-70b-8192"):
+        self.client = groq.AsyncGroq(api_key=api_key)
         self.model = model
 ```
 
@@ -395,7 +395,7 @@ class ClaudeClient(ILLM):
 # SPEC: llm/openai_client.py
 
 ## Class: `OpenAIClient`
-Identical interface to `ClaudeClient`. Uses `openai.AsyncOpenAI`.
+Identical interface to `GroqClient`. Uses `openai.AsyncOpenAI`.
 Fallback provider. Model: `gpt-4o-mini` default.
 
 ---

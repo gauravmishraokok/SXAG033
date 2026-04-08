@@ -60,7 +60,7 @@ retriever = HybridRetriever(dense, symbolic, expander, reranker, settings)
 context_pager = ContextPager(settings)
 
 # 7. Initialize LLM
-llm = ClaudeClient(settings.anthropic_api_key, settings.llm_model)
+llm = GroqClient(settings.groq_api_key, settings.llm_model)
 
 # 8. Initialize court
 detector = ContradictionDetector(settings.contradiction_threshold)

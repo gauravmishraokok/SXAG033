@@ -17,7 +17,7 @@ def settings():
         context_window_budget=2000,
         embedding_dim=384,
         use_networkx_fallback=True,   # Skip Neo4j in unit tests
-        anthropic_api_key="test-key",
+        groq_api_key="test-key",
     )
 ```
 
