@@ -5,6 +5,12 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 
+class SupportingEvidence(BaseModel):
+    """A corroborating memory that reinforces the conflict verdict."""
+    label: str          # e.g. "GitHub Username"
+    content: str        # e.g. "gauravmishraokok — aligns with Gaurav Mishra"
+
+
 class QuarantineItemResponse(BaseModel):
     """Single quarantine queue item."""
 
@@ -12,9 +18,11 @@ class QuarantineItemResponse(BaseModel):
     incoming_content: str
     incoming_cube_id: str
     conflicting_cube_id: str
+    conflicting_content: str = ""           # Human-readable text of the conflicting memory
     contradiction_score: float
     reasoning: str
     suggested_resolution: str | None
+    supporting_evidence: list[SupportingEvidence] = []   # Extra corroborating memories
     created_at: str
 
 
