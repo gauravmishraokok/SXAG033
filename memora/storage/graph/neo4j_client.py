@@ -145,7 +145,8 @@ class Neo4jClient(IKGRepo):
                 query = """
                 MATCH (n:KGNode)
                 RETURN n.id as id,
-                       n.content as label,
+                       n.content as content,
+                       n.extra as extra,
                        n.type as type,
                        n.tier as tier
                 """

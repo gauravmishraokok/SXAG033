@@ -19,15 +19,21 @@ class ResolutionHandler:
         if not quarantine_record:
             raise QuarantineNotFoundError(f"Quarantine record {quarantine_id} not found")
 
-        if quarantine_record.status != QuarantineStatus.PENDING:
+        if isinstance(quarantine_record, dict):
+            status = quarantine_record.get("status")
+            session_id = quarantine_record.get("session_id") or "unknown"
+        else:
+            status = getattr(quarantine_record, "status", None)
+            session_id = getattr(quarantine_record, "session_id", None) or "unknown"
+
+        status_val = status.value if isinstance(status, QuarantineStatus) else status
+        if status_val != QuarantineStatus.PENDING.value:
             raise AlreadyResolvedError(f"Quarantine record {quarantine_id} is already resolved")
 
         await self.repo.resolve(quarantine_id, resolution, merged_content)
-
         await self.bus.publish(ResolutionApplied(
             quarantine_id=quarantine_id,
             resolution=resolution,
             merged_content=merged_content,
-            original_cube_id=quarantine_record.incoming_cube.id,
-            session_id=quarantine_record.incoming_cube.provenance.session_id if quarantine_record.incoming_cube.provenance else "unknown"
+            session_id=session_id,
         ))

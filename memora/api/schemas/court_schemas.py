@@ -10,6 +10,7 @@ class QuarantineItemResponse(BaseModel):
 
     quarantine_id: str
     incoming_content: str
+    incoming_cube_id: str
     conflicting_cube_id: str
     contradiction_score: float
     reasoning: str

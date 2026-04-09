@@ -70,11 +70,15 @@ class VaultEventWriter:
                 return
 
             if event.resolution == QuarantineStatus.RESOLVED_ACCEPT:
-                cube = self.factory.from_db_row(record["incoming_cube_json"])
+                from memora.storage.vector.mongo_vector_client import _doc_to_cube
+
+                cube = _doc_to_cube(record["incoming_cube_doc"])
                 await self._route_cube(cube)
 
             elif event.resolution == QuarantineStatus.RESOLVED_MERGE:
-                original = self.factory.from_db_row(record["incoming_cube_json"])
+                from memora.storage.vector.mongo_vector_client import _doc_to_cube
+
+                original = _doc_to_cube(record["incoming_cube_doc"])
                 merged_cube = await self.factory.create(
                     content=event.merged_content,
                     memory_type=original.memory_type,
