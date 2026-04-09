@@ -1,18 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query'
+import { getTimeline } from '../api/timeline'
+import { useChatStore } from '../store'
 
-async function fetchTimeline(sessionId: string | null) {
-  const params = new URLSearchParams();
-  if (sessionId) params.set("session_id", sessionId);
-  params.set("limit", "50");
-  const resp = await fetch(`/api/timeline?${params.toString()}`);
-  if (!resp.ok) throw new Error("Failed to fetch timeline");
-  return resp.json();
-}
-
-export function useTimeline(sessionId: string | null) {
+export function useTimeline() {
+  const sessionId = useChatStore((s) => s.sessionId)
   return useQuery({
-    queryKey: ["timeline", sessionId],
-    queryFn: () => fetchTimeline(sessionId),
-    refetchOnWindowFocus: true,
-  });
+    queryKey: ['timeline', sessionId],
+    queryFn: () => getTimeline(sessionId),
+    refetchInterval: 2000,
+    placeholderData: (prev) => prev,
+  })
 }

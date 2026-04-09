@@ -1,26 +1,47 @@
-import { create } from "zustand";
-import type { Message } from "../types";
+import { create } from 'zustand'
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  memoriesUsed?: string[]
+  timestamp: Date
+}
 
 interface ChatState {
-  messages: Message[];
-  sessionId: string | null;
-  isLoading: boolean;
-  inputValue: string;
-  addMessage: (msg: Message) => void;
-  setSession: (id: string) => void;
-  setLoading: (v: boolean) => void;
-  setInputValue: (v: string) => void;
-  clear: () => void;
+  messages: ChatMessage[]
+  sessionId: string | null
+  isStreaming: boolean
+  agentThoughts: string
+  lastUsedMemoryIds: string[]
+  addMessage: (msg: Omit<ChatMessage, 'id' | 'timestamp'>) => void
+  setSession: (id: string) => void
+  setStreaming: (v: boolean) => void
+  setThoughts: (t: string) => void
+  setLastUsedMemoryIds: (ids: string[]) => void
+  clear: () => void
 }
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   sessionId: null,
-  isLoading: false,
-  inputValue: "",
-  addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
+  isStreaming: false,
+  agentThoughts: '',
+  lastUsedMemoryIds: [],
+
+  addMessage: (msg) =>
+    set((s) => ({
+      messages: [
+        ...s.messages,
+        { ...msg, id: crypto.randomUUID(), timestamp: new Date() },
+      ],
+    })),
+
   setSession: (id) => set({ sessionId: id }),
-  setLoading: (v) => set({ isLoading: v }),
-  setInputValue: (v) => set({ inputValue: v }),
-  clear: () => set({ messages: [], sessionId: null, isLoading: false, inputValue: "" }),
-}));
+  setStreaming: (v) => set({ isStreaming: v }),
+  setThoughts: (t) => set({ agentThoughts: t }),
+  setLastUsedMemoryIds: (ids) => set({ lastUsedMemoryIds: ids }),
+
+  clear: () =>
+    set({ messages: [], isStreaming: false, agentThoughts: '', lastUsedMemoryIds: [] }),
+}))

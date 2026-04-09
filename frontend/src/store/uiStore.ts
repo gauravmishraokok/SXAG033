@@ -1,19 +1,40 @@
-import { create } from "zustand";
+import { create } from 'zustand'
 
 interface UIState {
-  activePanel: "graph" | "timeline" | "health";
-  isBottomPanelOpen: boolean;
-  selectedNodeId: string | null;
-  setActivePanel: (panel: UIState["activePanel"]) => void;
-  toggleBottomPanel: () => void;
-  selectNode: (id: string | null) => void;
+  bottomTab: 'graph' | 'timeline' | 'health'
+  isBottomOpen: boolean
+  memoryFilter: Set<string>
+  selectedNodeId: string | null
+  flashedMemoryIds: string[]
+  setBottomTab: (t: UIState['bottomTab']) => void
+  toggleBottom: () => void
+  toggleFilter: (type: string) => void
+  selectNode: (id: string | null) => void
+  flashMemories: (ids: string[]) => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  activePanel: "graph",
-  isBottomPanelOpen: true,
+  bottomTab: 'graph',
+  isBottomOpen: true,
+  memoryFilter: new Set<string>(),
   selectedNodeId: null,
-  setActivePanel: (panel) => set({ activePanel: panel }),
-  toggleBottomPanel: () => set((s) => ({ isBottomPanelOpen: !s.isBottomPanelOpen })),
+  flashedMemoryIds: [],
+
+  setBottomTab: (t) => set({ bottomTab: t }),
+  toggleBottom: () => set((s) => ({ isBottomOpen: !s.isBottomOpen })),
+
+  toggleFilter: (type) =>
+    set((s) => {
+      const next = new Set(s.memoryFilter)
+      if (next.has(type)) next.delete(type)
+      else next.add(type)
+      return { memoryFilter: next }
+    }),
+
   selectNode: (id) => set({ selectedNodeId: id }),
-}));
+
+  flashMemories: (ids) => {
+    set({ flashedMemoryIds: ids })
+    setTimeout(() => set({ flashedMemoryIds: [] }), 2000)
+  },
+}))

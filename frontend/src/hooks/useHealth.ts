@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-
-async function fetchHealth() {
-  const resp = await fetch("/api/health");
-  if (!resp.ok) throw new Error("Failed to fetch health");
-  return resp.json();
-}
+import { useQuery } from '@tanstack/react-query'
+import { getHealth } from '../api/health'
 
 export function useHealth() {
-  return useQuery({ queryKey: ["health"], queryFn: fetchHealth, refetchInterval: 5000 });
+  return useQuery({
+    queryKey: ['health'],
+    queryFn: getHealth,
+    refetchInterval: 5000,
+    placeholderData: (prev) => prev,
+  })
 }
