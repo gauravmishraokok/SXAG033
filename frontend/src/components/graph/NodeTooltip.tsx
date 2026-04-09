@@ -9,7 +9,9 @@ interface Props {
 export function NodeTooltip({ node, x, y }: Props) {
   const type = node.type ?? node.memory_type ?? 'episodic'
   const tier = node.tier ?? 'cold'
-  const content = node.content ?? node.label ?? node.id ?? ''
+  const extra = node.extra ?? {}
+  const title = (node.label ?? extra.label ?? extra.title ?? node.content ?? node.id ?? '') as string
+  const detail = (extra.detail as string | undefined) || (node.content as string) || ''
   const tags: string[] = node.tags ?? []
 
   return (
@@ -31,8 +33,13 @@ export function NodeTooltip({ node, x, y }: Props) {
       boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
     }}>
       <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-        {content.slice(0, 40)}{content.length > 40 ? '…' : ''}
+        {String(title).slice(0, 48)}{String(title).length > 48 ? '…' : ''}
       </div>
+      {detail && detail !== title && (
+        <div style={{ fontSize: 10, color: 'var(--text-dim)', marginBottom: 6, lineHeight: 1.45 }}>
+          {String(detail).slice(0, 120)}{String(detail).length > 120 ? '…' : ''}
+        </div>
+      )}
       <div>type: <span style={{ color: 'var(--text-primary)' }}>{type}</span></div>
       <div>tier: <span style={{ color: 'var(--text-primary)' }}>{tier}</span></div>
       <div>access: <span style={{ color: 'var(--text-primary)' }}>{node.access_count ?? 0}</span></div>

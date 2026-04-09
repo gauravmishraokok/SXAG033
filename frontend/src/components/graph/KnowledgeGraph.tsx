@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { useGraphData } from '../../hooks/useGraphData'
 import { useUIStore } from '../../store'
 import { GraphCanvas } from './GraphCanvas'
@@ -25,8 +25,19 @@ export function KnowledgeGraph() {
     return () => ro.disconnect()
   }, [])
 
-  const nodes: any[] = data?.nodes ?? []
-  const edges: any[] = data?.edges ?? []
+  const nodes: any[] = Array.isArray(data?.nodes) ? data.nodes : []
+  const edgesRaw: any[] = Array.isArray(data?.edges) ? data.edges : []
+
+  const edges = useMemo(() => {
+    if (edgesRaw.length > 0) return edgesRaw
+    if (nodes.length < 2) return []
+    return nodes.slice(0, -1).map((n, i) => ({
+      id: `syn-${String(n.id)}-${String(nodes[i + 1].id)}`,
+      source: n.id,
+      target: nodes[i + 1].id,
+      label: '',
+    }))
+  }, [edgesRaw, nodes])
 
   if (isError) {
     return (

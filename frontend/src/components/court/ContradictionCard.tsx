@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { resolveCourtItem } from '../../api/court'
 import { ScoreBar } from './ScoreBar'
 import { MergeModal } from './MergeModal'
@@ -6,6 +7,8 @@ import { MergeModal } from './MergeModal'
 interface QuarantineItem {
   id?: string
   quarantine_id?: string
+  incoming_content?: string
+  conflicting_content?: string
   incoming_memory?: { content?: string; cube_id?: string }
   conflicting_memory?: { content?: string; cube_id?: string }
   incoming?: { content?: string }
@@ -26,13 +29,22 @@ interface Props {
 }
 
 export function ContradictionCard({ item, onResolved }: Props) {
+  const queryClient = useQueryClient()
   const [resolving, setResolving] = useState(false)
   const [showMerge, setShowMerge] = useState(false)
   const [fading, setFading] = useState(false)
 
   const id = item.id ?? item.quarantine_id ?? ''
-  const incomingContent = item.incoming_memory?.content ?? item.incoming?.content ?? '—'
-  const conflictContent = item.conflicting_memory?.content ?? item.conflicting?.content ?? '—'
+  const incomingContent =
+    item.incoming_content ??
+    item.incoming_memory?.content ??
+    item.incoming?.content ??
+    '—'
+  const conflictContent =
+    item.conflicting_content ??
+    item.conflicting_memory?.content ??
+    item.conflicting?.content ??
+    '—'
   const score = item.contradiction_score ?? item.score ?? 0
   const reasoning = item.judge_reasoning ?? item.reasoning ?? '—'
   const suggested = item.suggested_resolution ?? item.suggested ?? 'reject'
@@ -43,6 +55,7 @@ export function ContradictionCard({ item, onResolved }: Props) {
     setResolving(true)
     try {
       await resolveCourtItem(id, resolution, mergedContent)
+      queryClient.invalidateQueries({ queryKey: ['court-queue'] })
     } catch {
       // ignore — optimistic UI
     }
