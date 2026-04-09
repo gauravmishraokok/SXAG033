@@ -31,6 +31,19 @@ class SessionManager:
             raise ValueError(f"Session {session_id} not found")
         return self._sessions[session_id]
 
+    def ensure_session(self, session_id: str) -> None:
+        """Register session_id if missing (e.g. client restored from localStorage after restart)."""
+        if session_id in self._sessions:
+            return
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        self._sessions[session_id] = SessionState(
+            session_id=session_id,
+            turn_count=0,
+            created_at=now,
+            last_active_at=now,
+            context_token_count=0,
+        )
+
     def increment_turn(self, session_id: str) -> int:
         session = self.get(session_id)
         session.turn_count += 1
