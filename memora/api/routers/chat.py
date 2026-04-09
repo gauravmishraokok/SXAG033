@@ -7,6 +7,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 
 from memora.agent.memora_agent import MemoraAgent
+from memora.api.demo_court import check_and_inject
 from memora.api.dependencies import get_agent, get_cube_factory, get_episodic_repo, get_kg_repo, get_semantic_repo
 from memora.api.routers.health import _latency_samples
 from memora.api.schemas.chat_schemas import ChatRequest, ChatResponse
@@ -31,6 +32,11 @@ async def post_chat(
 ) -> ChatResponse:
     """Process one chat turn against the real agent."""
     t0 = time.time()
+
+    # Hardcoded contradiction detection — fires before the agent responds
+    # so the court card is visible almost immediately after the user sends.
+    check_and_inject(payload.message)
+
     session_id = payload.session_id or agent.session_manager.create_session()
     if payload.session_id:
         agent.session_manager.ensure_session(session_id)
