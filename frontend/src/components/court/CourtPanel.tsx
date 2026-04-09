@@ -30,7 +30,7 @@ export function CourtPanel() {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     setHistory((prev) => [{ id, label, time, resolution: 'accept' as const }, ...prev].slice(0, 5))
     refetch()
-    qc.invalidateQueries({ queryKey: ['court/queue'] })
+    qc.invalidateQueries({ queryKey: ['court-queue'] })
   }
 
   const isEmpty = pendingCount === 0

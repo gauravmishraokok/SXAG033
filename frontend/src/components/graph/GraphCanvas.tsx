@@ -78,6 +78,14 @@ export function GraphCanvas({ nodes, edges, width, height, selectedNodeId, onNod
 
     // Defs: arrowhead
     const defs = svg.append('defs')
+    const grad = defs.append('radialGradient').attr('id', 'graph-bg-glow')
+    grad.append('stop').attr('offset', '0%').attr('stop-color', '#1a1f35')
+    grad.append('stop').attr('offset', '100%').attr('stop-color', '#050507')
+    svg.insert('rect', ':first-child')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', 'url(#graph-bg-glow)')
+
     defs.append('marker')
       .attr('id', 'arrow')
       .attr('viewBox', '0 -5 10 10')
@@ -101,8 +109,9 @@ export function GraphCanvas({ nodes, edges, width, height, selectedNodeId, onNod
     const link = g.append('g').attr('class', 'links').selectAll('line')
       .data(edgeData)
       .enter().append('line')
-      .attr('stroke', (d: any) => d.status === 'deprecated' ? 'rgba(255,71,87,0.4)' : 'rgba(58,61,77,0.9)')
-      .attr('stroke-width', 1)
+      .attr('stroke', (d: any) => (d.status === 'deprecated' ? 'rgba(255,71,87,0.35)' : 'rgba(100,120,180,0.45)'))
+      .attr('stroke-width', (d: any) => (String(d.id || '').startsWith('syn-') ? 0.6 : 1.1))
+      .attr('opacity', (d: any) => (String(d.id || '').startsWith('syn-') ? 0.35 : 0.85))
       .attr('stroke-dasharray', (d: any) => d.status === 'deprecated' ? '4 3' : null)
 
     // Nodes
@@ -130,9 +139,11 @@ export function GraphCanvas({ nodes, edges, width, height, selectedNodeId, onNod
     nodeG.append('circle')
       .attr('r', nodeRadius)
       .attr('fill', (d) => getColor(d))
+      .attr('stroke', 'rgba(255,255,255,0.12)')
+      .attr('stroke-width', 1)
       .attr('opacity', (d) => {
-        if (!selectedNodeId) return 0.9
-        return d.id === selectedNodeId ? 1 : 0.2
+        if (!selectedNodeId) return 0.92
+        return d.id === selectedNodeId ? 1 : 0.22
       })
       .attr('filter', (d) => (d.tier ?? '').toLowerCase() === 'hot' ? 'url(#hotglow)' : null)
 
@@ -145,22 +156,24 @@ export function GraphCanvas({ nodes, edges, width, height, selectedNodeId, onNod
 
     // Labels
     nodeG.append('text')
-      .attr('dy', (d) => nodeRadius(d) + 12)
+      .attr('dy', (d) => nodeRadius(d) + 13)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#9098b4')
-      .attr('font-size', 9)
+      .attr('fill', '#b4bcd8')
+      .attr('font-size', 10)
+      .attr('font-weight', 500)
       .attr('font-family', 'DM Sans, sans-serif')
       .text((d) => {
-        const label = d.label ?? d.content ?? d.id
-        return label.slice(0, 20)
+        const label = String(d.label ?? d.content ?? d.id ?? '')
+        const t = label.trim()
+        return t.length > 22 ? `${t.slice(0, 20)}…` : t
       })
 
     // Simulation
     const sim = d3.forceSimulation<GraphNode>(nodeData)
-      .force('link', d3.forceLink<GraphNode, GraphEdge>(edgeData as any).id((d) => d.id).distance(90).strength(0.8))
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('link', d3.forceLink<GraphNode, GraphEdge>(edgeData as any).id((d) => d.id).distance(112).strength(0.55))
+      .force('charge', d3.forceManyBody().strength(-420))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 6))
+      .force('collision', d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 14))
       .alphaDecay(0.03)
       .on('tick', () => {
         link
@@ -182,7 +195,7 @@ export function GraphCanvas({ nodes, edges, width, height, selectedNodeId, onNod
         ref={svgRef}
         width={width}
         height={height}
-        style={{ background: 'var(--bg-void)', display: 'block' }}
+        style={{ background: 'transparent', display: 'block' }}
       />
       {tooltip && (
         <NodeTooltip node={tooltip.node} x={tooltip.x} y={tooltip.y} />

@@ -16,6 +16,8 @@ class MemoryCubeResponse(BaseModel):
     access_count: int
     created_at: str
     updated_at: str
+    provenance: dict | None = None
+    extra: dict = Field(default_factory=dict)
 
 
 class MemoryListResponse(BaseModel):

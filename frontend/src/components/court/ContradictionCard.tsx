@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { resolveCourtItem } from '../../api/court'
 import { ScoreBar } from './ScoreBar'
 import { MergeModal } from './MergeModal'
@@ -11,11 +12,8 @@ interface SupportingEvidence {
 interface QuarantineItem {
   id?: string
   quarantine_id?: string
-  // Flat fields from backend
   incoming_content?: string
   conflicting_content?: string
-  conflicting_cube_id?: string
-  // Nested variants (legacy)
   incoming_memory?: { content?: string; cube_id?: string }
   conflicting_memory?: { content?: string; cube_id?: string }
   incoming?: { content?: string }
@@ -41,6 +39,7 @@ interface Props {
 }
 
 export function ContradictionCard({ item, onResolved }: Props) {
+  const queryClient = useQueryClient()
   const [resolving, setResolving] = useState(false)
   const [showMerge, setShowMerge] = useState(false)
   const [fading, setFading] = useState(false)
@@ -67,6 +66,7 @@ export function ContradictionCard({ item, onResolved }: Props) {
     setResolving(true)
     try {
       await resolveCourtItem(id, resolution, mergedContent)
+      queryClient.invalidateQueries({ queryKey: ['court-queue'] })
     } catch {
       // optimistic UI — ignore errors
     }

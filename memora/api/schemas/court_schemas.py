@@ -16,6 +16,7 @@ class QuarantineItemResponse(BaseModel):
 
     quarantine_id: str
     incoming_content: str
+    incoming_cube_id: str
     conflicting_cube_id: str
     conflicting_content: str = ""           # Human-readable text of the conflicting memory
     contradiction_score: float

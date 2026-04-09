@@ -4,65 +4,64 @@ from __future__ import annotations
 
 import asyncio
 
-from memora.core.config import get_settings
-from memora.storage.vector.embedding import SentenceTransformerEmbedder
-from memora.vault.mem_cube import MemCubeFactory
+import httpx
+
+BASE = "http://localhost:8000"
+
+DEMO_CONVERSATIONS = [
+    (
+        "We're building a B2B SaaS product targeting small and medium businesses. "
+        "Our core value prop is affordability - we're going low-cost to penetrate the SMB market fast."
+    ),
+    (
+        "The engineering team is 4 engineers, 1 designer, and 1 PM. "
+        "We have a 6-month runway to hit product-market fit."
+    ),
+    (
+        "Tech stack decision: FastAPI for the backend, PostgreSQL for storage, "
+        "React for the frontend. We're deploying on AWS using ECS Fargate."
+    ),
+    (
+        "Our pricing model is freemium with a $29/month pro tier. "
+        "No enterprise tier for now - we want to stay lean."
+    ),
+    (
+        "Competitor analysis complete. Main competitor charges $199/month. "
+        "Our $29 price point is a clear differentiator for budget-conscious SMBs."
+    ),
+]
+
+CONTRADICTION_MESSAGE = (
+    "Executive team meeting today. New direction: we should pivot to enterprise "
+    "and charge $299/month. The SMB market is too fragmented."
+)
 
 
 async def main() -> None:
-    """Seed deterministic demo-memory counts for local demo mode."""
-    settings = get_settings()
+    async with httpx.AsyncClient(timeout=30) as client:
+        session_res = await client.post(f"{BASE}/chat/session")
+        session_res.raise_for_status()
+        session_id = session_res.json()["session_id"]
+        print(f"Demo session created: {session_id}")
 
-    from memora.storage.mongo.connection import init_motor, get_database, dispose_motor
-    from memora.storage.mongo.collections import setup_indexes
-    from memora.storage.vector.mongo_vector_client import MongoVectorClient
-    from memora.core.types import MemoryType
+        for i, message in enumerate(DEMO_CONVERSATIONS, start=1):
+            chat_res = await client.post(
+                f"{BASE}/chat",
+                json={"message": message, "session_id": session_id},
+            )
+            chat_res.raise_for_status()
+            print(f"Seeded conversation {i}/{len(DEMO_CONVERSATIONS)}")
+            await asyncio.sleep(3)
 
-    await init_motor(settings.mongodb_url, settings.mongodb_db_name)
-    db = await get_database()
-    await setup_indexes(db)
+        await asyncio.sleep(3)
+        contradiction_res = await client.post(
+            f"{BASE}/chat",
+            json={"message": CONTRADICTION_MESSAGE, "session_id": session_id},
+        )
+        contradiction_res.raise_for_status()
 
-    embedder = SentenceTransformerEmbedder(settings.embedding_model)
-    mongo_client = MongoVectorClient(db, settings.embedding_dim)
-    factory = MemCubeFactory(embedder, settings)
-
-    # 1. Seed Episodic Memories
-    episodic_data = [
-        "User asked about the project status.",
-        "Agent explained the new MongoDB migration plan.",
-        "The team discussed the upcoming hackathon.",
-        "User confirmed they like coffee.",
-    ]
-    for content in episodic_data:
-        cube = await factory.create(content, MemoryType.EPISODIC, "session-123")
-        await mongo_client.upsert(cube)
-
-    # 2. Seed Semantic Memories
-    semantic_data = [
-        ("coffee_preference", "User prefers dark roast coffee."),
-        ("project_role", "User is the lead architect for SolarisX."),
-    ]
-    for key, content in semantic_data:
-        cube = await factory.create(content, MemoryType.SEMANTIC, "session-123", extra={"key": key})
-        await mongo_client.upsert(cube)
-
-    # 3. Seed a contradiction for demo
-    conflict_cube = await factory.create(
-        "User actually prefers light roast coffee.",
-        MemoryType.SEMANTIC,
-        "session-123",
-        extra={"key": "coffee_preference"}
-    )
-    # We don't upsert directly; this would be caught by judge in a real flow.
-    # For seeding purposes, we just ensure we have some data.
-    await mongo_client.upsert(conflict_cube)
-
-    print("SUCCESS: Demo data seeded successfully")
-    print(f"  Episodic memories: {len(episodic_data)}")
-    print(f"  Semantic memories: {len(semantic_data)}")
-    print("  Quarantine records: 1 (simulated)")
-
-    await dispose_motor()
+        print("Injected contradiction message.")
+        print(f"SESSION_ID={session_id}")
 
 
 if __name__ == "__main__":

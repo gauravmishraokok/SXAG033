@@ -99,11 +99,16 @@ class NetworkXClient(IKGRepo):
         """For graph visualization. Returns list of {id, label, type, tier}."""
         nodes_data = []
         for node_id, data in self.graph.nodes(data=True):
+            extra = data.get("extra") or {}
+            content = data.get("content", "")
+            short = (extra.get("label") or extra.get("title") or content or "")[:80]
             nodes_data.append({
                 "id": node_id,
-                "label": data.get("content", ""),
+                "content": content,
+                "extra": extra,
+                "label": short,
                 "type": data.get("type", "episodic"),
-                "tier": data.get("tier", "warm")
+                "tier": data.get("tier", "warm"),
             })
         return nodes_data
     
