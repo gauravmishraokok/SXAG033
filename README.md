@@ -843,7 +843,7 @@ Nemori episode segmentation · Predict-calibrate dedup · Hybrid retrieval · Gr
 Memory Court ⚖️ · Contradiction detection · Experience Learner 🧠 · MemoraAgent turn loop · Session management
 </td>
 <td align="center" width="25%">
-<b>Lavish</b><br/>
+<b>LAVISH</b><br/>
 <i>Interface Layer</i><br/><br/>
 <code>api/</code> <code>frontend/</code><br/><br/>
 FastAPI wiring · D3 knowledge graph · Court resolution UI · Memory timeline · Health dashboard · Demo seeding
